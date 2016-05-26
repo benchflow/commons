@@ -8,33 +8,11 @@ import (
 	"strings"
 	"bytes"
 	"fmt"
+	"crypto/md5"
+	"encoding/hex"
 )
 
-func StoreOnMinio(fileName string, bucket string, key string) {
-	config := minio.Config{
-		AccessKeyID:     os.Getenv("MINIO_ACCESSKEYID"),
-		SecretAccessKey: os.Getenv("MINIO_SECRETACCESSKEY"),
-		Endpoint:        os.Getenv("MINIO_HOST"),
-		}
-		s3Client, err := minio.New(config)
-	    if err != nil {
-	        log.Fatalln(err)
-	    }  
-	    object, err := os.Open(fileName)
-		if err != nil {
-			log.Fatalln(err)
-		}
-		defer object.Close()
-		objectInfo, err := object.Stat()
-		if err != nil {
-			object.Close()
-			log.Fatalln(err)
-		}
-		err = s3Client.PutObject(bucket, key, "application/octet-stream", objectInfo.Size(), object)
-		if err != nil {
-			log.Fatalln(err)
-		}
-	}
+const numOfHashCharacters int = 4
 
 func callMinioClient(fileName string, minioHost string, minioKey string) {
 		//TODO: change, we are using sudo to elevate the priviledge in the container, but it is not nice
@@ -53,11 +31,29 @@ func callMinioClient(fileName string, minioHost string, minioKey string) {
 		fmt.Println("Result: " + out.String())
 }
 
-func GenerateKey(fileName string) string {
-	// TODO: Use the hash library to generate a hash
-	trialId := os.Getenv("TRIAL_ID")
-	t := strings.Split(trialId, "_")
-	return ("hash/"+t[0]+"/"+t[1]+"/"+os.Getenv("CONTAINER_NAME")+"/"+os.Getenv("COLLECTOR_NAME")+"/"+os.Getenv("DATA_NAME")+"/"+fileName)
+func sendToMinio(fileName string, minioHost string, minioKey string, accessKey string, secretAccessKey string) {
+	minioClient, err := minio.New(minioHost, accessKey, secretAccessKey, true)
+	if err != nil {
+		fmt.Println(err)
+	    return
+	    }
+	_, err = minioClient.FPutObject("runs", minioKey, fileName, "application/gzip")
+	if err != nil {
+	    fmt.Println(err)
+	    return
+		}
+	}
+
+func hashKey(key string) string {
+	hasher := md5.New()
+    hasher.Write([]byte(key))
+    hashString := hex.EncodeToString(hasher.Sum(nil))
+	return (hashString[:numOfHashCharacters]+"/"+key)
+	}
+
+func GenerateKey(fileName string, trialID string, experimentID string, containerName string, collectorName string, dataName string) string {
+	key := experimentId+"/"+trialId+"/"+containerName+"/"+collectorName+"/"+dataName+"/"+fileName)
+	return hashKey(key)
 }
 
 func GzipFile(fileName string) {
