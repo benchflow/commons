@@ -31,17 +31,18 @@ func callMinioClient(fileName string, minioHost string, minioKey string) {
 		fmt.Println("Result: " + out.String())
 }
 
-func sendToMinio(fileName string, minioHost string, minioKey string, accessKey string, secretAccessKey string) {
+func sendToMinio(fileName string, minioHost string, minioKey string, accessKey string, secretAccessKey string, fileType string) error {
 	minioClient, err := minio.New(minioHost, accessKey, secretAccessKey, true)
 	if err != nil {
 		fmt.Println(err)
-	    return
+	    return err
 	    }
-	_, err = minioClient.FPutObject("runs", minioKey, fileName, "application/gzip")
+	_, err = minioClient.FPutObject("runs", minioKey, fileName, fileType)
 	if err != nil {
 	    fmt.Println(err)
-	    return
+	    return err
 		}
+	return nil
 	}
 
 func hashKey(key string) string {
