@@ -14,6 +14,8 @@ import (
 
 const numOfHashCharacters int = 4
 
+/*
+// We keep thos function in case the API fails because of a Minio update
 func callMinioClient(fileName string, minioHost string, minioKey string) {
 		//TODO: change, we are using sudo to elevate the priviledge in the container, but it is not nice
 		//NOTE: it seems that the commands that are not in PATH, should be launched using sh -c
@@ -30,6 +32,11 @@ func callMinioClient(fileName string, minioHost string, minioKey string) {
 		}
 		fmt.Println("Result: " + out.String())
 }
+*/
+
+func sendGzipToMinio(fileName string, minioHost string, minioKey string, accessKey string, secretAccessKey string) {
+	sendToMinio(fileName, minioHost, minioKey, accessKey, secretAccessKey, "application/gzip")
+	}
 
 func sendToMinio(fileName string, minioHost string, minioKey string, accessKey string, secretAccessKey string, fileType string) error {
 	minioClient, err := minio.New(minioHost, accessKey, secretAccessKey, true)
