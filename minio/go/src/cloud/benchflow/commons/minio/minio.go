@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 )
 
+//Number of hash characters
 const numOfHashCharacters int = 4
 
 /*
@@ -30,10 +31,12 @@ func callMinioClient(fileName string, minioHost string, minioKey string) {
 }
 */
 
+//Function to send a gzip file to Minio
 func SendGzipToMinio(fileName string, minioHost string, minioPort string, minioKey string, accessKey string, secretAccessKey string) {
 	sendToMinio(fileName, minioHost, minioPort, minioKey, accessKey, secretAccessKey, "application/gzip")
 	}
 
+//Function to send a file to Minio using the Minio client for Golang
 func sendToMinio(fileName string, minioHost string, minioPort string, minioKey string, accessKey string, secretAccessKey string, fileType string) error {
 	minioClient, err := minio.New(minioHost+":"+minioPort, accessKey, secretAccessKey, true)
 	if err != nil {
@@ -48,6 +51,7 @@ func sendToMinio(fileName string, minioHost string, minioPort string, minioKey s
 	return nil
 	}
 
+//Function to hash a key with MD5
 func hashKey(key string) string {
 	hasher := md5.New()
     hasher.Write([]byte(key))
@@ -55,11 +59,13 @@ func hashKey(key string) string {
 	return (hashString[:numOfHashCharacters]+"/"+key)
 	}
 
+//Function to generate the Minio key including the hash
 func GenerateKey(fileName string, trialID string, experimentID string, containerName string, collectorName string, dataName string) string {
 	key := experimentID+"/"+trialID+"/"+containerName+"/"+collectorName+"/"+dataName+"/"+fileName
 	return hashKey(key)
 }
 
+//Function to compress a file with Gzip
 func GzipFile(fileName string) {
 	cmd := exec.Command("gzip", fileName)
 	err := cmd.Start()
