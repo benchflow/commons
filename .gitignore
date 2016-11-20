@@ -1,8 +1,10 @@
-bin/
-!minio/java/bin
-Godeps/_workspace/pkg/
-target
-.idea
+#Eclipse settings
 .settings
-client.iml
-minio/java/lib
+.classpath
+
+#IntelliJ IDEA settings
+.idea
+
+#Build artefacts
+target
+bin
